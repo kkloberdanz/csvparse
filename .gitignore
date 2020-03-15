@@ -1,6 +1,7 @@
+a.out
+csvparse
 *.so
 *.a
-csvparse
 *.swp
 *.swo
 *.o
