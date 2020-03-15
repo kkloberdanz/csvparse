@@ -25,6 +25,7 @@ int main(int argc, char **argv) {
     char *filename;
     struct CSV csv;
     enum csv_ErrorCode parse_code;
+    int status_code;
 
     if (argc > 1) {
         filename = argv[1];
@@ -53,5 +54,7 @@ int main(int argc, char **argv) {
             fprintf(stderr, "empty file\n");
             break;
     }
-    return parse_code;
+
+    status_code = (int)parse_code;
+    return status_code;
 }
