@@ -39,7 +39,7 @@ struct CSV {
     size_t nrows;
 };
 
-enum csv_error_code {
+enum csv_ErrorCode {
     csv_NO_ERROR = 0,
     csv_PARSE_ERROR = 1,
     csv_OUT_OF_MEMORY = 2,
