@@ -18,6 +18,18 @@
 #ifndef CSVPARSE_H
 #define CSVPARSE_H
 
+#ifndef TARGET_EXPORT
+#    ifdef WIN32
+#        ifdef EXPORTING
+#            define TARGET_EXPORT __declspec(dllexport)
+#        else
+#            define TARGET_EXPORT __declspec(dllimport)
+#        endif
+#    else
+#        define TARGET_EXPORT __attribute__ ((visibility ("default")))
+#    endif
+#endif
+
 #include <stdio.h>
 
 struct CSV {
@@ -34,8 +46,8 @@ enum csv_error_code {
     csv_EMPTY_FILE = 3
 };
 
-void csv_print(struct CSV *csv);
-int csv_parse(struct CSV *csv, FILE *fp);
-void csv_free(struct CSV *csv);
+TARGET_EXPORT void csv_print(struct CSV *csv);
+TARGET_EXPORT int csv_parse(struct CSV *csv, FILE *fp);
+TARGET_EXPORT void csv_free(struct CSV *csv);
 
 #endif /* CSVPARSE_H */

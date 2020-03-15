@@ -153,7 +153,7 @@ cleanup_cols:
 
 cleanup_header:
     free(csv->header);
-    return 2;
+    return csv_OUT_OF_MEMORY;
 }
 
 void csv_print(struct CSV *csv) {

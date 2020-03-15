@@ -13,12 +13,15 @@
 # 
 #   You should have received a copy of the GNU Affero General Public License
 #   along with this program.  If not, see <https://www.gnu.org/licenses/>.
+#
 
 CC=cc
 AR=ar rcs
-OPTIM=-O3
+OPTIM=-Os
 WARN_FLAGS=-Wall -Wextra -Wpedantic
-CFLAGS=$(OPTIM) $(WARN_FLAGS) -fPIC
+STD=-std=gnu89
+VISIBILITY=-fvisibility=hidden
+CFLAGS=$(OPTIM) $(WARN_FLAGS) $(STD) $(VISIBILITY) -fPIC
 
 .PHONY: all
 all: csvparse libcsvparse.so libcsvparse.a
