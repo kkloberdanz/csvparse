@@ -18,7 +18,7 @@
 CC=cc
 AR=ar rcs
 OPTIM=-Os
-WARN_FLAGS=-Wall -Wextra -Wpedantic
+WARN_FLAGS=-Wall -Wextra -Wpedantic -Wswitch
 STD=-std=gnu89
 VISIBILITY=-fvisibility=hidden
 CFLAGS=$(OPTIM) $(WARN_FLAGS) $(STD) $(VISIBILITY) -fPIC

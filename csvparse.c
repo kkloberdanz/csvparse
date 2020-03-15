@@ -83,7 +83,7 @@ void csv_free(struct CSV *csv) {
     free(csv->data);
 }
 
-int csv_parse(struct CSV *csv, FILE *fp) {
+enum csv_ErrorCode csv_parse(struct CSV *csv, FILE *fp) {
     char header_buf[BUF_SIZE];
     char line[BUF_SIZE];
     size_t curr_line = 0;

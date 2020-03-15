@@ -47,7 +47,7 @@ enum csv_ErrorCode {
 };
 
 TARGET_EXPORT void csv_print(struct CSV *csv);
-TARGET_EXPORT int csv_parse(struct CSV *csv, FILE *fp);
+TARGET_EXPORT enum csv_ErrorCode csv_parse(struct CSV *csv, FILE *fp);
 TARGET_EXPORT void csv_free(struct CSV *csv);
 
 #endif /* CSVPARSE_H */

@@ -24,7 +24,7 @@ int main(int argc, char **argv) {
     FILE *fp;
     char *filename;
     struct CSV csv;
-    int parse_code;
+    enum csv_ErrorCode parse_code;
 
     if (argc > 1) {
         filename = argv[1];
