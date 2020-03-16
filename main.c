@@ -22,7 +22,7 @@
 
 #include "csvparse.h"
 
-int parse(const char *filename, bool print, bool stats) {
+static int parse(const char *filename, bool print, bool stats) {
     FILE *fp;
     struct CSV csv;
     size_t i;
@@ -38,18 +38,15 @@ int parse(const char *filename, bool print, bool stats) {
 
         case csv_PARSE_ERROR:
             fprintf(stderr, "failed to parse input file\n");
-            return parse_code;
-            break;
+            return (int)parse_code;
 
         case csv_OUT_OF_MEMORY:
             fprintf(stderr, "failed to allocate memory\n");
-            return parse_code;
-            break;
+            return (int)parse_code;
 
         case csv_EMPTY_FILE:
             fprintf(stderr, "empty file\n");
-            return parse_code;
-            break;
+            return (int)parse_code;
     }
 
     if (stats) {

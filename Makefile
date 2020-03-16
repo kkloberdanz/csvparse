@@ -34,6 +34,11 @@ test: all
 debug: OPTIM := -ggdb3 -O0 -Werror
 debug: all
 
+.PHONY: clang-everything
+clang-everything: WARN_FLAGS := $(WARN_FLAGS) -Weverything
+clang-everything: CC := clang
+clang-everything: all
+
 .PHONY: sanitize
 sanitize: OPTIM := -ggdb3 -O0 -Werror \
 	-fsanitize=address \
