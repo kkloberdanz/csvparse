@@ -112,8 +112,7 @@ enum csv_ErrorCode csv_parse(struct CSV *csv, FILE *fp) {
         char *col_name;
         strcpy(tmp, header_buf);
         if ((col_name = getfield(tmp, i + 1)) == NULL) {
-            csv_free(csv);
-            return csv_OUT_OF_MEMORY;
+            goto cleanup_header;
         }
         csv->header[i] = col_name;
     }
