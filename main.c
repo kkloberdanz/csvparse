@@ -22,15 +22,19 @@
 
 #include "csvparse.h"
 
-static int parse(const char *filename, bool print, bool stats) {
-    FILE *fp;
-    struct CSV csv;
-    size_t i;
-    enum csv_ErrorCode parse_code;
+enum csv_Options {
+    STATS = 1,
+    PRINT = 2,
+    OUTPUT = 4
+};
 
-    fp = fopen(filename, "r");
-    parse_code = csv_parse(&csv, fp);
-    fclose(fp);
+static int handle_csv(
+    struct CSV *csv,
+    enum csv_ErrorCode parse_code,
+    int options,
+    const char *output_file
+) {
+    size_t i;
 
     switch (parse_code) {
         case csv_NO_ERROR:
@@ -49,59 +53,83 @@ static int parse(const char *filename, bool print, bool stats) {
             return (int)parse_code;
     }
 
-    if (stats) {
+    if (options & STATS) {
         printf("%s", "headers: ");
 
-        for (i = 0; i < csv.nfields - 1; i++) {
-            printf("%s,", csv.header[i]);
+        for (i = 0; i < csv->nfields - 1; i++) {
+            printf("%s,", csv->header[i]);
         }
-        printf("%s", csv.header[i]);
+        printf("%s", csv->header[i]);
 
         printf(
             " -- lines: %ld -- nfields: %ld\n",
-            csv.nrows,
-            csv.nfields
+            csv->nrows,
+            csv->nfields
         );
     }
 
-    if (print) {
-        csv_print(&csv);
+    if (options & PRINT) {
+        csv_print(csv);
     }
-    csv_free(&csv);
+
+    if (options & OUTPUT) {
+        FILE *fp = fopen(output_file, "w");
+        csv_write(csv, fp);
+        fclose(fp);
+    }
+
+    csv_free(csv);
     return 0;
+}
+
+static int parse(const char *filename, int options, const char *output_file) {
+    FILE *fp;
+    struct CSV csv;
+    enum csv_ErrorCode parse_code;
+
+    fp = fopen(filename, "r");
+    parse_code = csv_parse(&csv, fp);
+    fclose(fp);
+
+    return handle_csv(&csv, parse_code, options, output_file);
 }
 
 int main(int argc, char **argv) {
     char *filename;
+    char *output_file = NULL;
     int i;
-    bool print_flag = 0;
-    bool stats_flag = 0;
+    int options = 0;
     int c;
     int status_code = 0;
 
-    while ((c = getopt(argc, argv, "ps")) != -1) {
+    while ((c = getopt(argc, argv, "o:ps")) != -1) {
         switch (c) {
             case 'p':
-                print_flag = 1;
+                options |= PRINT;
                 break;
 
             case 's':
-                stats_flag = 1;
+                options |= STATS;
+                break;
+
+            case 'o':
+                options |= OUTPUT;
+                output_file = optarg;
                 break;
 
             case '?':
                 fprintf(stderr, "unknown option: %c\n", optopt);
-                exit(254);
+                return 128;
 
             default:
                 fprintf(stderr, "default: %c\n", c);
-                exit(255);
+                return 64;
         }
     }
 
     for (i = optind; i < argc; i++) {
         filename = argv[i];
-        status_code &= parse(filename, print_flag, stats_flag);
+        status_code &= parse(filename, options, output_file);
     }
 
     return status_code;

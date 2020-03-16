@@ -157,24 +157,28 @@ cleanup_header:
     return csv_OUT_OF_MEMORY;
 }
 
-void csv_print(struct CSV *csv) {
+void csv_write(struct CSV *csv, FILE *fp) {
     size_t i, j;
     for (i = 0; i < csv->nfields; i++) {
         char *col_name = csv->header[i];
         if (i >= csv->nfields - 1) {
-            printf("%s\n", col_name);
+            fprintf(fp, "%s\n", col_name);
         } else {
-            printf("%s,", col_name);
+            fprintf(fp, "%s,", col_name);
         }
     }
 
     for (j = 0; j < csv->nrows; j++) {
         for (i = 0; i < csv->nfields; i++) {
             if (i >= csv->nfields - 1) {
-                printf("%s\n", csv->data[i][j]);
+                fprintf(fp, "%s\n", csv->data[i][j]);
             } else {
-                printf("%s,", csv->data[i][j]);
+                fprintf(fp, "%s,", csv->data[i][j]);
             }
         }
     }
+}
+
+void csv_print(struct CSV *csv) {
+    csv_write(csv, stdout);
 }

@@ -43,10 +43,11 @@ enum csv_ErrorCode {
     csv_NO_ERROR = 0,
     csv_PARSE_ERROR = 1,
     csv_OUT_OF_MEMORY = 2,
-    csv_EMPTY_FILE = 3
+    csv_EMPTY_FILE = 4
 };
 
 TARGET_EXPORT void csv_print(struct CSV *csv);
+TARGET_EXPORT void csv_write(struct CSV *csv, FILE *fp);
 TARGET_EXPORT enum csv_ErrorCode csv_parse(struct CSV *csv, FILE *fp);
 TARGET_EXPORT void csv_free(struct CSV *csv);
 

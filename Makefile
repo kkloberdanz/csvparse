@@ -27,8 +27,12 @@ CFLAGS=$(OPTIM) $(WARN_FLAGS) $(STD) $(VISIBILITY) -fPIC
 all: csvparse libcsvparse.so libcsvparse.a
 
 .PHONY: test
-test: all
-	./csvparse -s testdata/voo_historical.csv -p
+test: clean
+	make clean && make all -j && \
+	./csvparse -s testdata/voo_historical.csv -p && \
+	make clean && make sanitize -j && \
+	make clean && make valgrind -j && \
+	echo "Ok"
 
 .PHONY: debug
 debug: OPTIM := -ggdb3 -O0 -Werror
