@@ -108,7 +108,7 @@ enum csv_ErrorCode csv_parse(struct CSV *csv, FILE *fp) {
     for (i = 0; i < csv->nfields; i++) {
         char tmp[BUF_SIZE];
         char *col_name;
-        memcpy(tmp, header_buf, sizeof(header_buf));
+        strcpy(tmp, header_buf);
         col_name = getfield(tmp, i + 1);
         csv->header[i] = strdup(col_name);
     }
@@ -124,14 +124,13 @@ enum csv_ErrorCode csv_parse(struct CSV *csv, FILE *fp) {
     }
 
     while (fgets(line, BUF_SIZE, fp)) {
-        char *tmp;
+        char tmp[BUF_SIZE];
         const char *field;
         strip(line);
         for (i = 0; i < csv->nfields; i++) {
-            tmp = strdup(line);
+            strcpy(tmp, line);
             field = getfield(tmp, i + 1);
             csv->data[i][curr_line] = strdup(field);
-            free(tmp);
         }
         curr_line++;
     }
