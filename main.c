@@ -37,6 +37,7 @@ int main(int argc, char **argv) {
 
     fp = fopen(filename, "r");
     parse_code = csv_parse(&csv, fp);
+    fclose(fp);
 
     printf("%s", "headers: ");
 

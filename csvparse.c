@@ -73,7 +73,7 @@ static char *strip(char *dst) {
 
 void csv_free(struct CSV *csv) {
     size_t i, j;
-    for (i = 0; i < csv->nfields - 1; i++) {
+    for (i = 0; i < csv->nfields; i++) {
         free(csv->header[i]);
         for (j = 0; j < csv->nrows; j++) {
             free(csv->data[i][j]);
@@ -81,6 +81,7 @@ void csv_free(struct CSV *csv) {
         free(csv->data[i]);
     }
     free(csv->data);
+    free(csv->header);
 }
 
 enum csv_ErrorCode csv_parse(struct CSV *csv, FILE *fp) {

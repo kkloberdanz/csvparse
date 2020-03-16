@@ -30,6 +30,21 @@ all: csvparse libcsvparse.so libcsvparse.a
 debug: OPTIM := -ggdb3 -O0
 debug: all
 
+.PHONY: sanitize
+sanitize: OPTIM := -ggdb3 -O0 \
+	-fsanitize=address \
+	-fsanitize=leak \
+	-fsanitize=undefined
+sanitize: all
+	./csvparse testdata/voo_historical.csv
+
+.PHONY: valgrind
+valgrind: VALGRIND_FLAGS := --leak-check=full \
+	--track-origins=yes \
+	--show-reachable=yes
+valgrind: debug
+	valgrind $(VALGRIND_FLAGS) ./csvparse testdata/voo_historical.csv
+
 csvparse: main.o libcsvparse.a
 	$(CC) -o csvparse main.o libcsvparse.a $(CFLAGS)
 
