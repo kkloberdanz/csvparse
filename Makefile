@@ -43,7 +43,8 @@ sanitize: all
 	./csvparse testdata/voo_historical.csv
 
 .PHONY: valgrind
-valgrind: VALGRIND_FLAGS := --leak-check=full \
+valgrind: VALGRIND_FLAGS := \
+	--leak-check=full \
 	--track-origins=yes \
 	--show-reachable=yes
 valgrind: debug
