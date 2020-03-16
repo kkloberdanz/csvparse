@@ -103,7 +103,7 @@ enum csv_ErrorCode csv_parse(struct CSV *csv, FILE *fp) {
 
     csv->nfields = charcount(header_buf, ',') + 1;
 
-    if ((csv->header = malloc(csv->nfields * sizeof(char *))) == NULL) {
+    if ((csv->header = calloc(csv->nfields, sizeof(char *))) == NULL) {
         goto cleanup_header;
     }
 
