@@ -17,22 +17,16 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <getopt.h>
+#include <stdbool.h>
 
 #include "csvparse.h"
 
-int main(int argc, char **argv) {
+int parse(const char *filename, bool print, bool stats) {
     FILE *fp;
-    char *filename;
     struct CSV csv;
-    enum csv_ErrorCode parse_code;
     size_t i;
-
-    if (argc > 1) {
-        filename = argv[1];
-    } else {
-        fprintf(stderr, "supply an input file\n");
-        return 255;
-    }
+    enum csv_ErrorCode parse_code;
 
     fp = fopen(filename, "r");
     parse_code = csv_parse(&csv, fp);
@@ -44,34 +38,73 @@ int main(int argc, char **argv) {
 
         case csv_PARSE_ERROR:
             fprintf(stderr, "failed to parse input file\n");
-            exit(parse_code);
+            return parse_code;
             break;
 
         case csv_OUT_OF_MEMORY:
             fprintf(stderr, "failed to allocate memory\n");
-            exit(parse_code);
+            return parse_code;
             break;
 
         case csv_EMPTY_FILE:
             fprintf(stderr, "empty file\n");
-            exit(parse_code);
+            return parse_code;
             break;
     }
 
-    printf("%s", "headers: ");
+    if (stats) {
+        printf("%s", "headers: ");
 
-    for (i = 0; i < csv.nfields; i++) {
-        printf("%s,", csv.header[i]);
+        for (i = 0; i < csv.nfields; i++) {
+            printf("%s,", csv.header[i]);
+        }
+
+        printf(
+            " -- lines: %ld -- nfields: %ld\n",
+            csv.nrows,
+            csv.nfields
+        );
     }
 
-    printf(
-        " -- lines: %ld -- nfields: %ld\n",
-        csv.nrows,
-        csv.nfields
-    );
-
-    csv_print(&csv);
+    if (print) {
+        csv_print(&csv);
+    }
     csv_free(&csv);
-
     return 0;
+}
+
+int main(int argc, char **argv) {
+    char *filename;
+    int i;
+    bool print_flag = 0;
+    bool stats_flag = 0;
+    int c;
+    int status_code = 0;
+
+    while ((c = getopt(argc, argv, "ps")) != -1) {
+        switch (c) {
+            case 'p':
+                print_flag = 1;
+                break;
+
+            case 's':
+                stats_flag = 1;
+                break;
+
+            case '?':
+                fprintf(stderr, "unknown option: %c\n", optopt);
+                exit(255);
+
+            default:
+                fprintf(stderr, "default: %c\n", c);
+                exit(255);
+        }
+    }
+
+    for (i = optind; i < argc; i++) {
+        filename = argv[i];
+        status_code &= parse(filename, print_flag, stats_flag);
+    }
+
+    return status_code;
 }

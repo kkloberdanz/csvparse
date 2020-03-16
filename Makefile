@@ -40,7 +40,7 @@ sanitize: OPTIM := -ggdb3 -O0 -Werror \
 	-fsanitize=leak \
 	-fsanitize=undefined
 sanitize: all
-	./csvparse testdata/voo_historical.csv
+	./csvparse -s -p testdata/voo_historical.csv
 
 .PHONY: valgrind
 valgrind: VALGRIND_FLAGS := \
@@ -48,7 +48,7 @@ valgrind: VALGRIND_FLAGS := \
 	--track-origins=yes \
 	--show-reachable=yes
 valgrind: debug
-	valgrind $(VALGRIND_FLAGS) ./csvparse testdata/voo_historical.csv
+	valgrind $(VALGRIND_FLAGS) ./csvparse -s -p testdata/voo_historical.csv
 
 csvparse: main.o libcsvparse.a
 	$(CC) -o csvparse main.o libcsvparse.a $(CFLAGS)
