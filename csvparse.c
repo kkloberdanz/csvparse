@@ -22,9 +22,9 @@
 
 #include "csvparse.h"
 
-enum {
-    BUF_SIZE = 1024
-};
+#ifndef CSV_MAX_LINE
+#define CSV_MAX_LINE 2048
+#endif
 
 static size_t countlines(FILE *fp) {
     int c;
@@ -87,15 +87,15 @@ void csv_free(struct CSV *csv) {
 }
 
 enum csv_ErrorCode csv_parse(struct CSV *csv, FILE *fp) {
-    char header_buf[BUF_SIZE];
-    char line[BUF_SIZE];
+    char header_buf[CSV_MAX_LINE];
+    char line[CSV_MAX_LINE];
     size_t curr_line = 0;
     size_t i;
 
     csv->nrows = countlines(fp) - 1;
     fseek(fp, 0, SEEK_SET);
 
-    if (!fgets(header_buf, BUF_SIZE, fp)) {
+    if (!fgets(header_buf, CSV_MAX_LINE, fp)) {
         return csv_EMPTY_FILE;
     }
 
@@ -108,7 +108,7 @@ enum csv_ErrorCode csv_parse(struct CSV *csv, FILE *fp) {
     }
 
     for (i = 0; i < csv->nfields; i++) {
-        char tmp[BUF_SIZE];
+        char tmp[CSV_MAX_LINE];
         char *col_name;
         strcpy(tmp, header_buf);
         if ((col_name = getfield(tmp, i + 1)) == NULL) {
@@ -127,8 +127,8 @@ enum csv_ErrorCode csv_parse(struct CSV *csv, FILE *fp) {
         }
     }
 
-    while (fgets(line, BUF_SIZE, fp)) {
-        char tmp[BUF_SIZE];
+    while (fgets(line, CSV_MAX_LINE, fp)) {
+        char tmp[CSV_MAX_LINE];
         char *field;
         strip(line);
         for (i = 0; i < csv->nfields; i++) {

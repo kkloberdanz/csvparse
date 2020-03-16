@@ -6,3 +6,4 @@ csvparse
 *.swo
 *.o
 outputfile.csv
+core
