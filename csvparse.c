@@ -151,6 +151,9 @@ cleanup_rows:
 
 cleanup_cols:
     free(csv->data);
+    for (i = 0; i < csv->nfields; i++) {
+        free(csv->header[i]);
+    }
 
 cleanup_header:
     free(csv->header);
