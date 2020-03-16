@@ -5,3 +5,4 @@ csvparse
 *.swp
 *.swo
 *.o
+outputfile.csv

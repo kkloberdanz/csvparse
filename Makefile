@@ -32,6 +32,7 @@ test: clean
 	./csvparse -s testdata/voo_historical.csv -p && \
 	make clean && make sanitize -j && \
 	make clean && make valgrind -j && \
+	./csvparse -s testdata/voo_historical.csv -p -o outputfile.csv && \
 	echo "Ok"
 
 .PHONY: debug
@@ -91,3 +92,4 @@ clean:
 	rm -f *.a
 	rm -f *.so
 	rm -f csvparse
+	rm -f outputfile.csv
