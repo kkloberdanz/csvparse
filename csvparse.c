@@ -106,10 +106,11 @@ enum csv_ErrorCode csv_parse(struct CSV *csv, FILE *fp) {
     }
 
     for (i = 0; i < csv->nfields; i++) {
-        char *tmp = strdup(header_buf);
-        char *col_name = getfield(tmp, i + 1);
+        char tmp[BUF_SIZE];
+        char *col_name;
+        memcpy(tmp, header_buf, sizeof(header_buf));
+        col_name = getfield(tmp, i + 1);
         csv->header[i] = strdup(col_name);
-        free(tmp);
     }
 
     if ((csv->data = calloc(csv->nfields, sizeof(char *))) == NULL) {

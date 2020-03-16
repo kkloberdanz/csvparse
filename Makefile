@@ -26,12 +26,16 @@ CFLAGS=$(OPTIM) $(WARN_FLAGS) $(STD) $(VISIBILITY) -fPIC
 .PHONY: all
 all: csvparse libcsvparse.so libcsvparse.a
 
+.PHONY: test
+test: all
+	./csvparse testdata/voo_historical.csv
+
 .PHONY: debug
-debug: OPTIM := -ggdb3 -O0
+debug: OPTIM := -ggdb3 -O0 -Werror
 debug: all
 
 .PHONY: sanitize
-sanitize: OPTIM := -ggdb3 -O0 \
+sanitize: OPTIM := -ggdb3 -O0 -Werror \
 	-fsanitize=address \
 	-fsanitize=leak \
 	-fsanitize=undefined
