@@ -153,10 +153,20 @@ void csv_print(struct CSV *csv) {
     size_t i, j;
     for (i = 0; i < csv->nfields; i++) {
         char *col_name = csv->header[i];
-        printf("%s: ", col_name);
-        for (j = 0; j < csv->nrows; j++) {
-            printf("%s,", csv->data[i][j]);
+        if (i >= csv->nfields - 1) {
+            printf("%s\n", col_name);
+        } else {
+            printf("%s,", col_name);
         }
-        puts("");
+    }
+
+    for (j = 0; j < csv->nrows; j++) {
+        for (i = 0; i < csv->nfields; i++) {
+            if (i >= csv->nfields - 1) {
+                printf("%s\n", csv->data[i][j]);
+            } else {
+                printf("%s,", csv->data[i][j]);
+            }
+        }
     }
 }
