@@ -25,7 +25,6 @@ int main(int argc, char **argv) {
     char *filename;
     struct CSV csv;
     enum csv_ErrorCode parse_code;
-    int status_code;
     size_t i;
 
     if (argc > 1) {
@@ -39,6 +38,26 @@ int main(int argc, char **argv) {
     parse_code = csv_parse(&csv, fp);
     fclose(fp);
 
+    switch (parse_code) {
+        case csv_NO_ERROR:
+            break;
+
+        case csv_PARSE_ERROR:
+            fprintf(stderr, "failed to parse input file\n");
+            exit(parse_code);
+            break;
+
+        case csv_OUT_OF_MEMORY:
+            fprintf(stderr, "failed to allocate memory\n");
+            exit(parse_code);
+            break;
+
+        case csv_EMPTY_FILE:
+            fprintf(stderr, "empty file\n");
+            exit(parse_code);
+            break;
+    }
+
     printf("%s", "headers: ");
 
     for (i = 0; i < csv.nfields; i++) {
@@ -51,25 +70,8 @@ int main(int argc, char **argv) {
         csv.nfields
     );
 
-    switch (parse_code) {
-        case csv_NO_ERROR:
-            csv_print(&csv);
-            csv_free(&csv);
-            break;
+    csv_print(&csv);
+    csv_free(&csv);
 
-        case csv_PARSE_ERROR:
-            fprintf(stderr, "failed to parse input file\n");
-            break;
-
-        case csv_OUT_OF_MEMORY:
-            fprintf(stderr, "failed to allocate memory\n");
-            break;
-
-        case csv_EMPTY_FILE:
-            fprintf(stderr, "empty file\n");
-            break;
-    }
-
-    status_code = (int)parse_code;
-    return status_code;
+    return 0;
 }
