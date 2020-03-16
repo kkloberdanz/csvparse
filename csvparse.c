@@ -135,7 +135,7 @@ enum csv_ErrorCode csv_parse(struct CSV *csv, FILE *fp) {
         curr_line++;
     }
 
-    return 0;
+    return csv_NO_ERROR;
 
 cleanup_rows:
     for (i = 0; csv->data[i] != NULL; i++) {
