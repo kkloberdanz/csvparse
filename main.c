@@ -26,6 +26,7 @@ int main(int argc, char **argv) {
     struct CSV csv;
     enum csv_ErrorCode parse_code;
     int status_code;
+    size_t i;
 
     if (argc > 1) {
         filename = argv[1];
@@ -36,6 +37,19 @@ int main(int argc, char **argv) {
 
     fp = fopen(filename, "r");
     parse_code = csv_parse(&csv, fp);
+
+    printf("%s", "headers: ");
+
+    for (i = 0; i < csv.nfields; i++) {
+        printf("%s,", csv.header[i]);
+    }
+
+    printf(
+        " -- lines: %ld -- nfields: %ld\n",
+        csv.nrows,
+        csv.nfields
+    );
+
     switch (parse_code) {
         case csv_NO_ERROR:
             csv_print(&csv);

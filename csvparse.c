@@ -111,13 +111,6 @@ enum csv_ErrorCode csv_parse(struct CSV *csv, FILE *fp) {
         free(tmp);
     }
 
-    printf(
-        "header: %s -- lines: %ld -- nfields: %ld\n",
-        header_buf,
-        csv->nrows,
-        csv->nfields
-    );
-
     if ((csv->data = calloc(csv->nfields, sizeof(char *))) == NULL) {
         goto cleanup_cols;
     }
