@@ -28,7 +28,7 @@ all: csvparse libcsvparse.so libcsvparse.a
 
 .PHONY: test
 test: all
-	./csvparse testdata/voo_historical.csv
+	./csvparse -s testdata/voo_historical.csv -p
 
 .PHONY: debug
 debug: OPTIM := -ggdb3 -O0 -Werror

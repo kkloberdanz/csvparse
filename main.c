@@ -55,9 +55,10 @@ int parse(const char *filename, bool print, bool stats) {
     if (stats) {
         printf("%s", "headers: ");
 
-        for (i = 0; i < csv.nfields; i++) {
+        for (i = 0; i < csv.nfields - 1; i++) {
             printf("%s,", csv.header[i]);
         }
+        printf("%s", csv.header[i]);
 
         printf(
             " -- lines: %ld -- nfields: %ld\n",
