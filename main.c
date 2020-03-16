@@ -32,7 +32,7 @@ static int handle_csv(
     struct CSV *csv,
     enum csv_ErrorCode parse_code,
     int options,
-    const char *output_file
+    FILE *output_file
 ) {
     size_t i;
 
@@ -73,25 +73,28 @@ static int handle_csv(
     }
 
     if (options & OUTPUT) {
-        FILE *fp = fopen(output_file, "w");
-        csv_write(csv, fp);
-        fclose(fp);
+        csv_write(csv, output_file);
     }
 
-    csv_free(csv);
     return 0;
 }
 
-static int parse(const char *filename, int options, const char *output_file) {
+static int parse(const char *filename, int options, FILE *output_file) {
     FILE *fp;
     struct CSV csv;
     enum csv_ErrorCode parse_code;
+    int status_code;
 
     fp = fopen(filename, "r");
     parse_code = csv_parse(&csv, fp);
     fclose(fp);
 
-    return handle_csv(&csv, parse_code, options, output_file);
+    status_code = handle_csv(&csv, parse_code, options, output_file);
+    if (!status_code) {
+        csv_free(&csv);
+    }
+
+    return status_code;
 }
 
 int main(int argc, char **argv) {
@@ -101,6 +104,7 @@ int main(int argc, char **argv) {
     int options = 0;
     int c;
     int status_code = 0;
+    FILE *fp = NULL;
 
     while ((c = getopt(argc, argv, "o:ps")) != -1) {
         switch (c) {
@@ -127,9 +131,17 @@ int main(int argc, char **argv) {
         }
     }
 
+    if (options & OUTPUT) {
+        fp = fopen(output_file, "w");
+    }
+
     for (i = optind; i < argc; i++) {
         filename = argv[i];
-        status_code &= parse(filename, options, output_file);
+        status_code |= parse(filename, options, fp);
+    }
+
+    if (options & OUTPUT) {
+        fclose(fp);
     }
 
     return status_code;
