@@ -93,7 +93,7 @@ int main(int argc, char **argv) {
 
             case '?':
                 fprintf(stderr, "unknown option: %c\n", optopt);
-                exit(255);
+                exit(254);
 
             default:
                 fprintf(stderr, "default: %c\n", c);
