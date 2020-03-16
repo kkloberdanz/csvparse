@@ -26,6 +26,11 @@ CFLAGS=$(OPTIM) $(WARN_FLAGS) $(STD) $(VISIBILITY) -fPIC
 .PHONY: all
 all: csvparse libcsvparse.so libcsvparse.a
 
+.PHONY: debug
+debug: OPTIM := -ggdb3 -O0
+debug: all
+
+
 csvparse: main.o libcsvparse.a
 	$(CC) -o csvparse main.o libcsvparse.a $(CFLAGS)
 
