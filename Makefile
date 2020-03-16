@@ -55,6 +55,17 @@ valgrind: VALGRIND_FLAGS := \
 valgrind: debug
 	valgrind $(VALGRIND_FLAGS) ./csvparse -s -p testdata/voo_historical.csv
 
+.PHONY: lint
+lint:
+	splint \
+		+charintliteral \
+		-boolops \
+		-unrecog \
+		-nullret \
+		-predboolothers \
+		csvparse.c \
+		csvparse.h
+
 csvparse: main.o libcsvparse.a
 	$(CC) -o csvparse main.o libcsvparse.a $(CFLAGS)
 

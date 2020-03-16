@@ -41,7 +41,7 @@ static char *getfield(char *line, size_t num) {
     char *tok;
     for (tok = strtok(line, ","); tok && *tok; tok = strtok(NULL, ",\n")) {
         if (!--num) {
-            return tok;
+            return strdup(tok);
         }
     }
     return NULL;
@@ -82,6 +82,8 @@ void csv_free(struct CSV *csv) {
     }
     free(csv->data);
     free(csv->header);
+    csv->data = NULL;
+    csv->header = NULL;
 }
 
 enum csv_ErrorCode csv_parse(struct CSV *csv, FILE *fp) {
@@ -109,8 +111,11 @@ enum csv_ErrorCode csv_parse(struct CSV *csv, FILE *fp) {
         char tmp[BUF_SIZE];
         char *col_name;
         strcpy(tmp, header_buf);
-        col_name = getfield(tmp, i + 1);
-        csv->header[i] = strdup(col_name);
+        if ((col_name = getfield(tmp, i + 1)) == NULL) {
+            csv_free(csv);
+            return csv_OUT_OF_MEMORY;
+        }
+        csv->header[i] = col_name;
     }
 
     if ((csv->data = calloc(csv->nfields, sizeof(char *))) == NULL) {
@@ -125,12 +130,15 @@ enum csv_ErrorCode csv_parse(struct CSV *csv, FILE *fp) {
 
     while (fgets(line, BUF_SIZE, fp)) {
         char tmp[BUF_SIZE];
-        const char *field;
+        char *field;
         strip(line);
         for (i = 0; i < csv->nfields; i++) {
             strcpy(tmp, line);
-            field = getfield(tmp, i + 1);
-            csv->data[i][curr_line] = strdup(field);
+            if ((field = getfield(tmp, i + 1)) == NULL) {
+                csv_free(csv);
+                return csv_OUT_OF_MEMORY;
+            }
+            csv->data[i][curr_line] = field;
         }
         curr_line++;
     }
