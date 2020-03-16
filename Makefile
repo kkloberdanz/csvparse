@@ -58,7 +58,7 @@ csvparse.o: csvparse.c csvparse.h
 	$(CC) -c csvparse.c $(CFLAGS)
 
 libcsvparse.so: csvparse.o
-	$(CC) -shared -o libcsvparse.so csvparse.o
+	$(CC) -shared -o libcsvparse.so csvparse.o $(CFLAGS)
 
 .PHONY: clean
 clean:
