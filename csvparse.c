@@ -151,11 +151,13 @@ cleanup_rows:
 
 cleanup_cols:
     free(csv->data);
-    for (i = 0; i < csv->nfields; i++) {
-        free(csv->header[i]);
-    }
 
 cleanup_header:
+    if (csv->header) {
+        for (i = 0; i < csv->nfields; i++) {
+            free(csv->header[i]);
+        }
+    }
     free(csv->header);
     return csv_OUT_OF_MEMORY;
 }
