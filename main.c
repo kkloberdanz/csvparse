@@ -106,6 +106,11 @@ int main(int argc, char **argv) {
     int status_code = 0;
     FILE *fp = NULL;
 
+    if (argc <= 1) {
+        fprintf(stderr, "csvparse: csvfile [-s] [-p] [-o outfile]\n");
+        return 1;
+    }
+
     while ((c = getopt(argc, argv, "o:ps")) != -1) {
         switch (c) {
             case 'p':
