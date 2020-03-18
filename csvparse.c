@@ -57,18 +57,15 @@ static size_t charcount(const char *src, char c) {
     return count;
 }
 
-static char *replace(char *dst, char from_this, char to_that) {
-    size_t i;
-    for (i = 0; dst[i] != '\0'; i++) {
-        if (dst[i] == from_this) {
-            dst[i] = to_that;
+static char *strip(char *dst) {
+    char *tmp;
+    for (tmp = dst; *tmp; tmp++) {
+        if ((*tmp == '\n') || (*tmp == '\r')) {
+            *tmp = '\0';
+            return dst;
         }
     }
     return dst;
-}
-
-static char *strip(char *dst) {
-    return replace(dst, '\n', '\0');
 }
 
 void csv_free(struct CSV *csv) {
@@ -130,7 +127,11 @@ enum csv_ErrorCode csv_parse(struct CSV *csv, FILE *fp) {
     while (fgets(line, CSV_MAX_LINE, fp)) {
         char tmp[CSV_MAX_LINE];
         char *field;
+
         strip(line);
+        if (!*line) {
+            continue;
+        }
         for (i = 0; i < csv->nfields; i++) {
             strcpy(tmp, line);
             if ((field = getfield(tmp, i + 1)) == NULL) {
