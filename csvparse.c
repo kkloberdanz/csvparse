@@ -49,7 +49,7 @@ static char *getfield(char *line, size_t num) {
 
 static size_t charcount(const char *src, char c) {
     size_t count = 0;
-    while (*src++) {
+    for (; *src; src++) {
         if (*src == c) {
             count++;
         }
