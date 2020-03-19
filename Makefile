@@ -19,9 +19,13 @@ CC=cc
 AR=ar rcs
 OPTIM=-Os
 WARN_FLAGS=-Wall -Wextra -Wpedantic -Wswitch
-STD=-std=gnu89
+STD=-std=c89
 VISIBILITY=-fvisibility=hidden
 CFLAGS=$(OPTIM) $(WARN_FLAGS) $(STD) $(VISIBILITY) -fPIC
+
+SRC = $(wildcard *.c)
+HEADERS = $(wildcard *.h)
+OBJS = $(patsubst %.c,%.o,$(SRC))
 
 .PHONY: all
 all: csvparse libcsvparse.so libcsvparse.a
@@ -31,8 +35,8 @@ test: clean
 	make clean && make all -j && \
 	./csvparse -s testdata/voo_historical.csv -p && \
 	make clean && make sanitize -j && \
-	make clean && make valgrind -j && \
 	./csvparse -s testdata/voo_historical.csv -p -o outputfile.csv && \
+	make clean && make valgrind -j && \
 	echo "Ok"
 
 .PHONY: debug
@@ -74,25 +78,14 @@ lint:
 csvparse: main.o libcsvparse.a
 	$(CC) -o csvparse main.o libcsvparse.a $(CFLAGS)
 
-main.o: main.c csvparse.h
-	$(CC) -c main.c $(CFLAGS)
+%.o: %.c $(HEADERS)
+	$(CC) -c $< -o $@ $(CFLAGS)
 
 libcsvparse.a: csvparse.o
 	$(AR) libcsvparse.a csvparse.o
 
-csvparse.o: csvparse.c csvparse.h 
-	$(CC) -c csvparse.c $(CFLAGS)
-
 libcsvparse.so: csvparse.o
 	$(CC) -shared -o libcsvparse.so csvparse.o $(CFLAGS)
-
-#test-parse: OPTIM := -ggdb3 -O0 -Werror \
-#	-fsanitize=address \
-#	-fsanitize=leak \
-#	-fsanitize=undefined
-test-parse: OPTIM := -ggdb3 -O0 -Werror
-test-parse: test_parse_line.c csvparse.c csvparse.h
-	$(CC) -o test-parse test_parse_line.c template.c csvparse.c $(CFLAGS)
 
 .PHONY: clean
 clean:

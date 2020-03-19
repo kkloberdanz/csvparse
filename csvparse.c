@@ -40,6 +40,9 @@
 
 typedef char BOOL;
 
+/* not officially C89, so forward declare */
+char *strdup(const char *s);
+
 static size_t countlines(FILE *fp) {
     int c;
     size_t nlines = 0;
