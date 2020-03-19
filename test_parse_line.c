@@ -1,4 +1,5 @@
-#include "template.h"
+#include <stdio.h>
+#include <stdlib.h>
 
 char **parse_line(const char *line);
 

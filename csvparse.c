@@ -36,8 +36,6 @@
 
 typedef char BOOL;
 
-static char *tok_not_found = "token not found";
-
 static size_t countlines(FILE *fp) {
     int c;
     size_t nlines = 0;
@@ -47,16 +45,6 @@ static size_t countlines(FILE *fp) {
         }
     }
     return nlines;
-}
-
-static char *getfield(char *line, size_t num) {
-    char *tok;
-    for (tok = strtok(line, ","); tok && *tok; tok = strtok(NULL, ",\n")) {
-        if (!--num) {
-            return strdup(tok);
-        }
-    }
-    return tok_not_found;
 }
 
 static size_t charcount(const char *src, char c) {
@@ -86,7 +74,6 @@ char **parse_line(const char *line) {
 
     for (; *line; line++) {
         c = *line;
-        fprintf(stderr, "'%c'\n", c);
         if (c == '"') {
             in_quote = !in_quote;
         }
@@ -146,7 +133,6 @@ void csv_free(struct CSV *csv) {
 }
 
 enum csv_ErrorCode csv_parse(struct CSV *csv, FILE *fp) {
-    char header_buf[CSV_MAX_LINE];
     char line[CSV_MAX_LINE];
     size_t curr_line = 0;
     size_t i;
@@ -157,32 +143,17 @@ enum csv_ErrorCode csv_parse(struct CSV *csv, FILE *fp) {
     csv->nrows = countlines(fp) - 1;
     fseek(fp, tell, SEEK_SET);
 
-    if (!fgets(header_buf, CSV_MAX_LINE, fp)) {
+    if (!fgets(line, CSV_MAX_LINE, fp)) {
         return csv_EMPTY_FILE;
     }
 
-    strip(header_buf);
+    strip(line);
 
-    csv->nfields = charcount(header_buf, ',') + 1;
+    csv->nfields = charcount(line, ',') + 1;
 
-    if ((csv->header = calloc(csv->nfields, sizeof(char *))) == NULL) {
+    if ((csv->header = parse_line(line)) == NULL) {
         exit_code = csv_OUT_OF_MEMORY;
         goto cleanup_header;
-    }
-
-    /* TODO: replace getfield with parse_line */
-    for (i = 0; i < csv->nfields; i++) {
-        char tmp[CSV_MAX_LINE];
-        char *col_name;
-        strcpy(tmp, header_buf);
-        if ((col_name = getfield(tmp, i + 1)) == NULL) {
-            exit_code = csv_OUT_OF_MEMORY;
-            goto cleanup_header;
-        } else if (col_name == tok_not_found) {
-            exit_code = csv_PARSE_ERROR;
-            goto cleanup_header;
-        }
-        csv->header[i] = col_name;
     }
 
     if ((csv->data = calloc(csv->nfields, sizeof(char *))) == NULL) {
@@ -198,8 +169,7 @@ enum csv_ErrorCode csv_parse(struct CSV *csv, FILE *fp) {
     }
 
     while (fgets(line, CSV_MAX_LINE, fp)) {
-        char tmp[CSV_MAX_LINE];
-        char *field;
+        char **fields;
 
         strip(line);
         if (!*line) {
@@ -211,16 +181,10 @@ enum csv_ErrorCode csv_parse(struct CSV *csv, FILE *fp) {
             return csv_PARSE_ERROR;
         }
 
+        fields = parse_line(line);
+
         for (i = 0; i < csv->nfields; i++) {
-            strcpy(tmp, line);
-            if ((field = getfield(tmp, i + 1)) == NULL) {
-                csv_free(csv);
-                return csv_OUT_OF_MEMORY;
-            } else if (field == tok_not_found) {
-                csv_free(csv);
-                return csv_PARSE_ERROR;
-            }
-            csv->data[i][curr_line] = field;
+            csv->data[i][curr_line] = fields[i];
         }
         curr_line++;
     }
