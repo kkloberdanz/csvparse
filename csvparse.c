@@ -30,10 +30,6 @@
 #define CSV_MAX_TOK_SIZE 255
 #endif
 
-#ifndef TRUE
-#define TRUE 1
-#endif
-
 #ifndef FALSE
 #define FALSE 0
 #endif
@@ -54,24 +50,37 @@ static size_t countlines(FILE *fp) {
     return nlines;
 }
 
-static size_t charcount(const char *src, char c) {
+static size_t get_nfields(const char *src) {
+    BOOL in_quote = FALSE;
     size_t count = 0;
+    char c;
+
     for (; *src; src++) {
-        if (*src == c) {
-            count++;
+        c = *src;
+
+        switch (c) {
+            case '"':
+                in_quote = !in_quote;
+                break;
+
+            case ',':
+                if (!in_quote) {
+                    count++;
+                }
+                break;
         }
     }
     return count;
 }
 
-char **parse_line(const char *line) {
+static char **parse_line(const char *line) {
     char c;
     BOOL in_quote = FALSE;
     char tok[CSV_MAX_TOK_SIZE] = {'\0'};
     char **fields;
     char **fields_cursor;
     size_t tok_index = 0;
-    size_t nfields = charcount(line, ',') + 2;
+    size_t nfields = get_nfields(line) + 2;
 
     if ((fields = calloc(nfields, sizeof(char *))) == NULL) {
         return NULL;
@@ -155,7 +164,7 @@ enum csv_ErrorCode csv_parse(struct CSV *csv, FILE *fp) {
 
     strip(line);
 
-    csv->nfields = charcount(line, ',') + 1;
+    csv->nfields = get_nfields(line) + 1;
 
     if ((csv->header = parse_line(line)) == NULL) {
         goto cleanup_header;
@@ -179,7 +188,7 @@ enum csv_ErrorCode csv_parse(struct CSV *csv, FILE *fp) {
             continue;
         }
 
-        if (charcount(line, ',') != (csv->nfields - 1)) {
+        if (get_nfields(line) != (csv->nfields - 1)) {
             csv_free(csv);
             return csv_PARSE_ERROR;
         }
