@@ -62,7 +62,7 @@ static int handle_csv(
         printf("%s", csv->header[i]);
 
         printf(
-            " -- lines: %ld -- nfields: %ld\n",
+            " -- nrecords: %ld -- nfields: %ld\n",
             csv->nrows,
             csv->nfields
         );

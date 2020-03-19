@@ -86,6 +86,14 @@ csvparse.o: csvparse.c csvparse.h
 libcsvparse.so: csvparse.o
 	$(CC) -shared -o libcsvparse.so csvparse.o $(CFLAGS)
 
+#test-parse: OPTIM := -ggdb3 -O0 -Werror \
+#	-fsanitize=address \
+#	-fsanitize=leak \
+#	-fsanitize=undefined
+test-parse: OPTIM := -ggdb3 -O0 -Werror
+test-parse: test_parse_line.c csvparse.c csvparse.h
+	$(CC) -o test-parse test_parse_line.c template.c csvparse.c $(CFLAGS)
+
 .PHONY: clean
 clean:
 	rm -f *.o
@@ -93,3 +101,4 @@ clean:
 	rm -f *.so
 	rm -f csvparse
 	rm -f outputfile.csv
+	rm -f test-parse

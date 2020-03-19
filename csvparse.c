@@ -26,6 +26,16 @@
 #define CSV_MAX_LINE 2048
 #endif
 
+#ifndef TRUE
+#define TRUE 1
+#endif
+
+#ifndef FALSE
+#define FALSE 0
+#endif
+
+typedef char BOOL;
+
 static char *tok_not_found = "token not found";
 
 static size_t countlines(FILE *fp) {
@@ -57,6 +67,56 @@ static size_t charcount(const char *src, char c) {
         }
     }
     return count;
+}
+
+char **parse_line(const char *line) {
+    char c;
+    BOOL in_quote = FALSE;
+    char tok[255] = {'\0'};
+    char **fields;
+    char **fields_cursor;
+    size_t tok_index = 0;
+    size_t nfields = charcount(line, ',') + 2;
+
+    if ((fields = calloc(nfields, sizeof(char *))) == NULL) {
+        return NULL;
+    }
+
+    fields_cursor = fields;
+
+    for (; *line; line++) {
+        c = *line;
+        fprintf(stderr, "'%c'\n", c);
+        if (c == '"') {
+            in_quote = !in_quote;
+        }
+
+        if ((c == ',') && (!in_quote)) {
+            if ((*fields_cursor = strdup(tok)) == NULL) {
+                free(fields);
+                return NULL;
+            }
+            fields_cursor++;
+            tok_index = 0;
+            *tok = '\0';
+        } else {
+            tok[tok_index++] = c;
+        }
+    }
+
+    if (*tok) {
+        if ((*fields_cursor = strdup(tok)) == NULL) {
+            for (fields_cursor = fields; *fields_cursor; fields_cursor++) {
+                free(*fields_cursor);
+            }
+            free(fields);
+            return NULL;
+        }
+        fields_cursor++;
+    }
+    *fields_cursor = NULL;
+
+    return fields;
 }
 
 static char *strip(char *dst) {
@@ -110,6 +170,7 @@ enum csv_ErrorCode csv_parse(struct CSV *csv, FILE *fp) {
         goto cleanup_header;
     }
 
+    /* TODO: replace getfield with parse_line */
     for (i = 0; i < csv->nfields; i++) {
         char tmp[CSV_MAX_LINE];
         char *col_name;
