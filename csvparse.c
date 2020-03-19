@@ -191,7 +191,7 @@ enum csv_ErrorCode csv_parse(struct CSV *csv, FILE *fp) {
         }
 
         if (parse_line(line, fields, csv->nfields) == NULL) {
-            goto cleanup_rows;
+            return csv_OUT_OF_MEMORY;
         }
 
         for (i = 0; i < csv->nfields; i++) {
@@ -204,7 +204,7 @@ enum csv_ErrorCode csv_parse(struct CSV *csv, FILE *fp) {
     return csv_NO_ERROR;
 
 cleanup_rows:
-    for (i = 0; csv->data[i] != NULL && i < csv->nfields; i++) {
+    for (i = 0; (csv->data[i] != NULL) && (i < csv->nrows); i++) {
         free(csv->data[i]);
     }
 
