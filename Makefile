@@ -95,3 +95,4 @@ clean:
 	rm -f csvparse
 	rm -f outputfile.csv
 	rm -f test-parse
+	rm -f *.zip
