@@ -83,6 +83,7 @@ static enum csv_ErrorCode parse_line(
     char tok[CSV_MAX_TOK_SIZE] = {'\0'};
     size_t tok_index = 0;
     size_t fields_index = 0;
+    size_t i = 0;
 
     for (; *line; line++) {
         c = *line;
@@ -108,6 +109,9 @@ static enum csv_ErrorCode parse_line(
     }
 
     if (fields_index != nfields) {
+        for (i = 0; i < fields_index; i++) {
+            free(fields[i]);
+        }
         return csv_PARSE_ERROR;
     } else {
         return csv_NO_ERROR;
@@ -217,7 +221,9 @@ enum csv_ErrorCode csv_parse(struct CSV *csv, FILE *fp) {
             case csv_EMPTY_FILE:
             case csv_OUT_OF_MEMORY:
             case csv_PARSE_ERROR:
-                goto cleanup_cols;
+                free(fields);
+                csv_free(csv);
+                return parse_code;
 
             case csv_NO_ERROR:
                 break;
