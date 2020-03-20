@@ -4,7 +4,7 @@ set -e
 
 cd /work
 
-make -j
+make clean && make -j WARN_FLAGS="-Wall -Wextra"
 
 mkdir -p /work/dist/csvparse
 

@@ -1,6 +1,6 @@
 FROM centos:6
 
-RUN yum install -y make gcc git zip unzip
+RUN yum update -y && yum install -y make gcc git zip unzip
 
 WORKDIR /work
 
