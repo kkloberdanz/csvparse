@@ -211,11 +211,6 @@ enum csv_ErrorCode csv_parse(struct CSV *csv, FILE *fp) {
             continue;
         }
 
-        if (get_nfields(line) != (csv->nfields - 1)) {
-            csv_free(csv);
-            return csv_PARSE_ERROR;
-        }
-
         parse_code = parse_line(line, fields, csv->nfields);
         switch (parse_code) {
             case csv_EMPTY_FILE:
