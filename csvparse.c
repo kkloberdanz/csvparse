@@ -22,10 +22,6 @@
 
 #include "csvparse.h"
 
-#ifndef CSV_MAX_TOK_SIZE
-#define CSV_MAX_TOK_SIZE 255
-#endif
-
 #ifndef FALSE
 #define FALSE 0
 #endif
@@ -70,13 +66,14 @@ static size_t get_nfields(const char *src) {
 }
 
 static enum csv_ErrorCode parse_line(
+    char** tok,
+    size_t *tok_len,
     const char *line,
     char **fields,
     size_t nfields
 ) {
     char c;
     BOOL in_quote = FALSE;
-    char tok[CSV_MAX_TOK_SIZE] = {'\0'};
     size_t tok_index = 0;
     size_t fields_index = 0;
     size_t i = 0;
@@ -88,18 +85,27 @@ static enum csv_ErrorCode parse_line(
         }
 
         if ((c == ',') && (!in_quote)) {
-            if ((fields[fields_index++] = strdup(tok)) == NULL) {
+            if ((fields[fields_index++] = strdup(*tok)) == NULL) {
                 return csv_OUT_OF_MEMORY;
             }
+            memset(*tok, 0, tok_index);
             tok_index = 0;
-            memset(tok, 0, CSV_MAX_TOK_SIZE);
         } else {
-            tok[tok_index++] = c;
+            if (tok_index >= (*tok_len - 1)) {
+                *tok_len *= 2;
+                if ((*tok = realloc(*tok, *tok_len)) == NULL) {
+                    return csv_OUT_OF_MEMORY;
+                }
+            }
+            (*tok)[tok_index++] = c;
         }
     }
 
-    if (*tok) {
-        if ((fields[fields_index++] = strdup(tok)) == NULL) {
+    if (tok && *tok && **tok) {
+        if ((fields[fields_index++] = strdup(*tok)) == NULL) {
+            for (i = 0; i < fields_index; i++) {
+                free(fields[i]);
+            }
             return csv_OUT_OF_MEMORY;
         }
     }
@@ -149,6 +155,8 @@ enum csv_ErrorCode csv_parse(struct CSV *csv, FILE *fp) {
     char **fields;
     char **headers;
     enum csv_ErrorCode parse_code;
+    char *tok = NULL;
+    size_t tok_len = 128;
 
     tell = ftell(fp);
     csv->nrows = countlines(fp) - 1;
@@ -173,7 +181,12 @@ enum csv_ErrorCode csv_parse(struct CSV *csv, FILE *fp) {
         goto cleanup_fields;
     }
 
-    parse_code = parse_line(line, headers, csv->nfields);
+    if ((tok = calloc(tok_len, sizeof(char))) == NULL) {
+        parse_code = csv_OUT_OF_MEMORY;
+        goto cleanup_fields;
+    }
+
+    parse_code = parse_line(&tok, &tok_len, line, headers, csv->nfields);
     switch (parse_code) {
         case csv_NO_ERROR:
             csv->header = headers;
@@ -185,6 +198,7 @@ enum csv_ErrorCode csv_parse(struct CSV *csv, FILE *fp) {
         case csv_PARSE_ERROR:
             free(headers);
             free(line);
+            free(tok);
             return csv_PARSE_ERROR;
 
         case csv_EMPTY_FILE:
@@ -211,7 +225,7 @@ enum csv_ErrorCode csv_parse(struct CSV *csv, FILE *fp) {
             continue;
         }
 
-        parse_code = parse_line(line, fields, csv->nfields);
+        parse_code = parse_line(&tok, &tok_len, line, fields, csv->nfields);
         switch (parse_code) {
             case csv_EMPTY_FILE:
             case csv_OUT_OF_MEMORY:
@@ -219,6 +233,7 @@ enum csv_ErrorCode csv_parse(struct CSV *csv, FILE *fp) {
                 free(fields);
                 csv_free(csv);
                 free(line);
+                free(tok);
                 return parse_code;
 
             case csv_NO_ERROR:
@@ -233,6 +248,7 @@ enum csv_ErrorCode csv_parse(struct CSV *csv, FILE *fp) {
 
     free(fields);
     free(line);
+    free(tok);
     return csv_NO_ERROR;
 
 cleanup_rows:
