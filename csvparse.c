@@ -22,10 +22,6 @@
 
 #include "csvparse.h"
 
-#ifndef CSV_MAX_LINE
-#define CSV_MAX_LINE 2048
-#endif
-
 #ifndef CSV_MAX_TOK_SIZE
 #define CSV_MAX_TOK_SIZE 255
 #endif
@@ -145,9 +141,10 @@ void csv_free(struct CSV *csv) {
 }
 
 enum csv_ErrorCode csv_parse(struct CSV *csv, FILE *fp) {
-    char line[CSV_MAX_LINE];
+    char *line = NULL;
     size_t curr_line = 0;
     size_t i;
+    size_t n = 0;
     long tell;
     char **fields;
     char **headers;
@@ -157,7 +154,8 @@ enum csv_ErrorCode csv_parse(struct CSV *csv, FILE *fp) {
     csv->nrows = countlines(fp) - 1;
     fseek(fp, tell, SEEK_SET);
 
-    if (!fgets(line, CSV_MAX_LINE, fp)) {
+    if ((getline(&line, &n, fp)) == -1) {
+        free(line);
         return csv_EMPTY_FILE;
     }
 
@@ -166,6 +164,7 @@ enum csv_ErrorCode csv_parse(struct CSV *csv, FILE *fp) {
     csv->nfields = get_nfields(line) + 1;
 
     if ((fields = calloc(csv->nfields, sizeof(char *))) == NULL) {
+        free(line);
         return csv_OUT_OF_MEMORY;
     }
 
@@ -185,6 +184,7 @@ enum csv_ErrorCode csv_parse(struct CSV *csv, FILE *fp) {
 
         case csv_PARSE_ERROR:
             free(headers);
+            free(line);
             return csv_PARSE_ERROR;
 
         case csv_EMPTY_FILE:
@@ -204,7 +204,7 @@ enum csv_ErrorCode csv_parse(struct CSV *csv, FILE *fp) {
         }
     }
 
-    while (fgets(line, CSV_MAX_LINE, fp)) {
+    while ((getline(&line, &n, fp)) != -1) {
 
         strip(line);
         if (!*line) {
@@ -218,6 +218,7 @@ enum csv_ErrorCode csv_parse(struct CSV *csv, FILE *fp) {
             case csv_PARSE_ERROR:
                 free(fields);
                 csv_free(csv);
+                free(line);
                 return parse_code;
 
             case csv_NO_ERROR:
@@ -231,6 +232,7 @@ enum csv_ErrorCode csv_parse(struct CSV *csv, FILE *fp) {
     }
 
     free(fields);
+    free(line);
     return csv_NO_ERROR;
 
 cleanup_rows:
@@ -251,7 +253,7 @@ cleanup_header:
 
 cleanup_fields:
     free(fields);
-
+    free(line);
     return parse_code;
 }
 

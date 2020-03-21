@@ -31,6 +31,13 @@
 #endif
 
 #include <stdio.h>
+#include <sys/types.h>
+
+#include "csvparse.h"
+
+#if !HAVE_GETLINE
+ssize_t getline(char **buf, size_t *bufsiz, FILE *fp);
+#endif
 
 struct CSV {
     char ***data;

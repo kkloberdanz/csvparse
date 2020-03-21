@@ -23,21 +23,17 @@ STD=-std=c89
 VISIBILITY=-fvisibility=hidden
 CFLAGS=$(OPTIM) $(WARN_FLAGS) $(STD) $(VISIBILITY) -fPIC
 
-SRC = $(wildcard *.c)
+SRC = $(wildcard *.c) $(wildcard extern/*.c)
 HEADERS = $(wildcard *.h)
 OBJS = $(patsubst %.c,%.o,$(SRC))
 
 .PHONY: all
-all: csvparse libcsvparse.so libcsvparse.a
+all: csvparse libcsvparse.so libcsvparse.a Makefile
 
 .PHONY: test
 test: clean
-	make clean && make all -j && \
-	./csvparse -s testdata/voo_historical.csv -p && \
-	make clean && make sanitize -j && \
-	./csvparse -s testdata/voo_historical.csv -p -o outputfile.csv && \
-	make clean && make valgrind -j && \
-	echo "Ok"
+	./test.sh
+	@echo "Ok"
 
 .PHONY: debug
 debug: OPTIM := -ggdb3 -O0 -Werror
@@ -75,11 +71,14 @@ lint:
 		csvparse.c \
 		csvparse.h
 
-csvparse: main.o libcsvparse.a
-	$(CC) -o csvparse main.o libcsvparse.a $(CFLAGS)
+csvparse: main.o libcsvparse.a extern/getline.o
+	$(CC) -o csvparse main.o extern/getline.o libcsvparse.a $(CFLAGS)
 
 %.o: %.c $(HEADERS)
 	$(CC) -c $< -o $@ $(CFLAGS)
+
+extern/getline.o: extern/getline.c
+	$(CC) -c extern/getline.c -o extern/getline.o $(CFLAGS)
 
 libcsvparse.a: csvparse.o
 	$(AR) libcsvparse.a csvparse.o
@@ -96,3 +95,4 @@ clean:
 	rm -f outputfile.csv
 	rm -f test-parse
 	rm -f *.zip
+	rm -f extern/*.o
