@@ -97,7 +97,6 @@ static enum csv_ErrorCode parse_line(
                     return csv_OUT_OF_MEMORY;
                 }
                 memset(*tok + tok_index, 0, *tok_len - tok_index);
-                fprintf(stderr, "reallocated to %lu\n", *tok_len);
             }
             (*tok)[tok_index++] = c;
         }
