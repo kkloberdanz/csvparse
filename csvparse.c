@@ -88,14 +88,16 @@ static enum csv_ErrorCode parse_line(
             if ((fields[fields_index++] = strdup(*tok)) == NULL) {
                 return csv_OUT_OF_MEMORY;
             }
-            memset(*tok, 0, tok_index);
+            memset(*tok, 0, *tok_len);
             tok_index = 0;
         } else {
             if (tok_index >= (*tok_len - 1)) {
                 *tok_len *= 2;
-                if ((*tok = realloc(*tok, *tok_len)) == NULL) {
+                if ((*tok = realloc(*tok, (1 + *tok_len))) == NULL) {
                     return csv_OUT_OF_MEMORY;
                 }
+                memset(*tok + tok_index, 0, *tok_len - tok_index);
+                fprintf(stderr, "reallocated to %lu\n", *tok_len);
             }
             (*tok)[tok_index++] = c;
         }
